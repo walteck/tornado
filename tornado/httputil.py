@@ -186,8 +186,13 @@ class HTTPHeaders(collections.MutableMapping):
             self._as_list[self._last_key][-1] += new_part
             self._dict[self._last_key] += new_part
         else:
-            name, value = line.split(":", 1)
-            self.add(name, value.strip())
+            try:
+                name, value = line.split(":", 1)
+                self.add(name, value.strip())
+            except ValueError:
+                # assume that this is a continuation of a mutli line header
+                self._as_list[self._last_key][-1] += line
+                self._dict[self._last_key] += line
 
     @classmethod
     def parse(cls, headers):
